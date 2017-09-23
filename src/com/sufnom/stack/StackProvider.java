@@ -77,6 +77,25 @@ public class StackProvider {
         return forward(namespace, "get", key.getBytes());
     }
 
+    public String updateFixed(String namespace, long blockId, byte[] rawData) throws Exception{
+        byte[] blockIdRaw = getRawBlockId(blockId);
+        byte[] dataToPass= new byte[rawData.length + blockIdRaw.length];
+        System.arraycopy(blockIdRaw, 0, dataToPass, 0, blockIdRaw.length);
+        System.arraycopy(rawData, 0, dataToPass, blockIdRaw.length, rawData.length);
+        return new String(forward(namespace, "update", dataToPass));
+    }
+    public String updateExtended(String namespace, String key, byte[] rawData) throws Exception{
+        if (key.length() > MAX_INDEX_LENGTH)
+            return "Error : Key Size Exceeds";
+        byte[] uidRaw = new byte[MAX_INDEX_LENGTH];
+        byte[] dataToPass= new byte[rawData.length + uidRaw.length];
+        byte[] keyRaw = key.getBytes();
+        System.arraycopy(keyRaw, 0, uidRaw, 0, keyRaw.length);
+        System.arraycopy(uidRaw, 0, dataToPass, 0, uidRaw.length);
+        System.arraycopy(rawData, 0, dataToPass, uidRaw.length, rawData.length);
+        return new String(forward(namespace, "update", dataToPass));
+    }
+
     private long getBlockId(byte[] rawData){
         ByteBuffer buffer = ByteBuffer.allocate(8);
         buffer.put(rawData);
@@ -93,8 +112,7 @@ public class StackProvider {
         buffer.clear();
         return rawBlockId;
     }
-
-
+    
     private byte[] forward(String target, String command, byte[] rawData) throws Exception{
         byte[] rawTarget = target.getBytes();
         if (rawTarget.length > STACK_NAMESPACE_LENGTH)
