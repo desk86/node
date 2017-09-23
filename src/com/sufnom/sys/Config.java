@@ -6,6 +6,7 @@ public class Config {
     public static final String FILE_NAME = "node-config.json";
 
     public static final String KEY_NODE_PORT = "stack_port";
+    public static final String KEY_STACK_URL = "stack_url";
     public static final String KEY_DEBUG = "debug";
 
     private static final Config session = new Config();

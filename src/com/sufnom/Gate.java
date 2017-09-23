@@ -14,7 +14,7 @@ public class Gate {
     public static final int PORT =
             Integer.parseInt(Config.getSession().getValue(Config.KEY_NODE_PORT));
     public static final boolean debug =
-            Config.getSession().getValue(Config.KEY_DEBUG)
+            Config.getSession().getValue(Config.KEY_DEBUG).toLowerCase()
             .equals(String.valueOf(true));
     private static final String CONTEXT_AUTH = "/auth";
     private static final String CONTEXT_NODE = "/node";
