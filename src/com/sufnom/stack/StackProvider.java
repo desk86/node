@@ -88,7 +88,7 @@ public class StackProvider {
         if (key.length() > MAX_INDEX_LENGTH)
             return "Error : Key Size Exceeds";
         byte[] uidRaw = new byte[MAX_INDEX_LENGTH];
-        byte[] dataToPass= new byte[rawData.length + uidRaw.length];
+        byte[] dataToPass = new byte[rawData.length + uidRaw.length];
         byte[] keyRaw = key.getBytes();
         System.arraycopy(keyRaw, 0, uidRaw, 0, keyRaw.length);
         System.arraycopy(uidRaw, 0, dataToPass, 0, uidRaw.length);
@@ -112,7 +112,7 @@ public class StackProvider {
         buffer.clear();
         return rawBlockId;
     }
-    
+
     private byte[] forward(String target, String command, byte[] rawData) throws Exception{
         byte[] rawTarget = target.getBytes();
         if (rawTarget.length > STACK_NAMESPACE_LENGTH)
