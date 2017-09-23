@@ -1,0 +1,5 @@
+{
+  "node_port" : "5051",
+  "debug" : "true",
+  "stack_url" : "http://localhost:5050/"
+}
