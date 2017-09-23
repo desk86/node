@@ -25,10 +25,13 @@ public class Gate {
     private static final String REQUEST_INSERT = "insert";
 
     public static void main(String[] args) {
-	    // write your code here
+	    Gate gate = new Gate();
+	    try { gate.open(); }
+        catch (Exception e){e.printStackTrace();}
     }
 
-    private static void onStart() throws Exception{
+    @SuppressWarnings("unused")
+    private void open() throws Exception{
         HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
         HttpContext context = server.createContext("/", new DefaultHandler());
         server.setExecutor(null);
