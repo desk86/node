@@ -28,6 +28,7 @@ public class StackProvider {
     public static final String NAMESPACE_NODE = "node";
     public static final String NAMESPACE_SYNAPSE = "synapse";
     public static final String NAMESPACE_EDITOR = "editor";
+    public static final String NAMESPACE_PAGE = "page";
 
     public static final String STACK_TYPE_FIXED = "fsi";
     public static final String STACK_TYPE_DYNAMIC = "dsi";
@@ -47,6 +48,7 @@ public class StackProvider {
         session.stackDefinitions.put(NAMESPACE_NODE, STACK_TYPE_FIXED);
         session.stackDefinitions.put(NAMESPACE_SYNAPSE, STACK_TYPE_DYNAMIC);
         session.stackDefinitions.put(NAMESPACE_EDITOR, STACK_TYPE_EXTENDED);
+        session.stackDefinitions.put(NAMESPACE_PAGE, STACK_TYPE_FIXED);
     }
 
     private HashMap<String, String> stackDefinitions;
@@ -96,7 +98,7 @@ public class StackProvider {
         return new String(forward(namespace, "update", dataToPass));
     }
 
-    private long getBlockId(byte[] rawData){
+    public static long getBlockId(byte[] rawData){
         ByteBuffer buffer = ByteBuffer.allocate(8);
         buffer.put(rawData);
         long blockId = buffer.getLong(0);

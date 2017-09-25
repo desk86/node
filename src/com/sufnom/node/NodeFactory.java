@@ -31,6 +31,15 @@ public class NodeFactory {
         return null;
     }
 
+    public Node getNode(long parentId){
+        try {
+            Node node = new Node(parentId);
+
+        }
+        catch (Exception e){e.printStackTrace();}
+        return null;
+    }
+
     public List<Long> getChildList(long parentId){
         List<Long> childIdList = new ArrayList<>();
         return childIdList;
