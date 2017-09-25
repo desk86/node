@@ -28,6 +28,7 @@ public class StackProvider {
     public static final String NAMESPACE_NODE = "node";
     public static final String NAMESPACE_SYNAPSE = "synapse";
     public static final String NAMESPACE_EDITOR = "editor";
+    public static final String NAMESPACE_PAGE = "page";
 
     public static final String STACK_TYPE_FIXED = "fsi";
     public static final String STACK_TYPE_DYNAMIC = "dsi";
@@ -47,6 +48,7 @@ public class StackProvider {
         session.stackDefinitions.put(NAMESPACE_NODE, STACK_TYPE_FIXED);
         session.stackDefinitions.put(NAMESPACE_SYNAPSE, STACK_TYPE_DYNAMIC);
         session.stackDefinitions.put(NAMESPACE_EDITOR, STACK_TYPE_EXTENDED);
+        session.stackDefinitions.put(NAMESPACE_PAGE, STACK_TYPE_FIXED);
     }
 
     private HashMap<String, String> stackDefinitions;
@@ -77,7 +79,26 @@ public class StackProvider {
         return forward(namespace, "get", key.getBytes());
     }
 
-    private long getBlockId(byte[] rawData){
+    public String updateFixed(String namespace, long blockId, byte[] rawData) throws Exception{
+        byte[] blockIdRaw = getRawBlockId(blockId);
+        byte[] dataToPass= new byte[rawData.length + blockIdRaw.length];
+        System.arraycopy(blockIdRaw, 0, dataToPass, 0, blockIdRaw.length);
+        System.arraycopy(rawData, 0, dataToPass, blockIdRaw.length, rawData.length);
+        return new String(forward(namespace, "update", dataToPass));
+    }
+    public String updateExtended(String namespace, String key, byte[] rawData) throws Exception{
+        if (key.length() > MAX_INDEX_LENGTH)
+            return "Error : Key Size Exceeds";
+        byte[] uidRaw = new byte[MAX_INDEX_LENGTH];
+        byte[] dataToPass = new byte[rawData.length + uidRaw.length];
+        byte[] keyRaw = key.getBytes();
+        System.arraycopy(keyRaw, 0, uidRaw, 0, keyRaw.length);
+        System.arraycopy(uidRaw, 0, dataToPass, 0, uidRaw.length);
+        System.arraycopy(rawData, 0, dataToPass, uidRaw.length, rawData.length);
+        return new String(forward(namespace, "update", dataToPass));
+    }
+
+    public static long getBlockId(byte[] rawData){
         ByteBuffer buffer = ByteBuffer.allocate(8);
         buffer.put(rawData);
         long blockId = buffer.getLong(0);
@@ -93,7 +114,6 @@ public class StackProvider {
         buffer.clear();
         return rawBlockId;
     }
-
 
     private byte[] forward(String target, String command, byte[] rawData) throws Exception{
         byte[] rawTarget = target.getBytes();
