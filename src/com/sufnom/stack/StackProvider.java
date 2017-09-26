@@ -22,6 +22,9 @@ public class StackProvider {
     public static final int STACK_DEFINITION_LENGTH = 4;
     public static final int STACK_COMMAND_LENGTH = 6;
 
+    //Fixed Stack max block size
+    public static final int MAX_FSI_SIZE = 4096;
+
     public static final String STACK_URL =
             Config.getSession().getValue(Config.KEY_STACK_URL);
 
