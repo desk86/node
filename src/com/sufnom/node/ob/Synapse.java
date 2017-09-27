@@ -1,8 +1,9 @@
 package com.sufnom.node.ob;
 
+import com.sufnom.stack.StackProvider;
 import org.json.JSONObject;
 
-import java.sql.ResultSet;
+import java.nio.ByteBuffer;
 
 public class Synapse {
     private static final String KEY_SYNAPSE_ID = "id";
@@ -14,8 +15,16 @@ public class Synapse {
     private long adminId;
     private long parentId;
     private long timeStamp;
+    private byte[] rawSynapseData;
 
-    public Synapse(long synapseId){ this.synapseId = synapseId; }
+    public Synapse(long synapseId, byte[] rawSynapseData){
+        this.synapseId = synapseId;
+        this.rawSynapseData = rawSynapseData;
+    }
+
+    private void iterateRawData(){
+        
+    }
 
     public long getAdminId() { return adminId; }
     public void setAdminId(long adminId) { this.adminId = adminId; }
@@ -51,16 +60,19 @@ public class Synapse {
         return super.toString();
     }
 
-    public static Synapse getFrom(ResultSet rs){
-        try {
-            Synapse synapse = new Synapse(rs.getLong(1));
-            synapse.setAdminId(rs.getLong(2));
-            synapse.setParentId(rs.getLong(3));
-            synapse.setContent(new JSONObject(rs.getString(4)));
-            synapse.setTimeStamp(rs.getLong(5));
-            return synapse;
-        }
-        catch (Exception e){e.printStackTrace();}
-        return null;
+    public static Synapse createNew(long adminId,
+                        long nodeId, String content) throws Exception{
+        byte[] contentBytes = content.getBytes();
+        int size = 24 + contentBytes.length;
+        byte[] rawData = new byte[size];
+        ByteBuffer buffer = ByteBuffer.allocate(24);
+        buffer.putLong(0, nodeId);
+        buffer.putLong(16, adminId);
+        byte[] synapseHeader = buffer.array();
+        buffer.clear();
+        System.arraycopy(synapseHeader, 0, rawData, 0, synapseHeader.length);
+        System.arraycopy(contentBytes, 0, rawData, synapseHeader.length, contentBytes.length);
+        long blockId = StackProvider.getSession().insertFixed(StackProvider.NAMESPACE_SYNAPSE, rawData);
+        return new Synapse(blockId, rawData);
     }
 }

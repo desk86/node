@@ -1,11 +1,13 @@
 package com.sufnom.node.ob;
 
 import com.sufnom.node.NodeTerminal;
+import com.sufnom.node.page.ZedPage;
 import com.sufnom.stack.StackProvider;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.nio.ByteBuffer;
+import java.sql.BatchUpdateException;
 import java.sql.ResultSet;
 
 public class Editor {
@@ -80,18 +82,42 @@ public class Editor {
         return array;
     }
 
-    public static Editor createNew(String email, String pass, JSONObject content){
+    public static Editor createNew(String email, String pass,
+                   JSONObject content) throws Exception{
         byte[] rawData = new byte[StackProvider.MAX_FSI_SIZE];
-        try {
-            //Insert Blank Page and get admin Id
+        //Insert Blank Page and get admin Id
+        String msg = StackProvider.getSession()
+                .insertExtended(StackProvider.NAMESPACE_EDITOR,
+                        email, rawData);
+        if (!msg.equals("ok"))
+            throw new Exception("Invalid Response From Stack : " + msg);
+        rawData = StackProvider.getSession()
+                .getExtended(StackProvider.NAMESPACE_EDITOR, email);
+        byte[] rawBlockId = new byte[8];
+        System.arraycopy(rawData, 0, rawBlockId, 0, rawBlockId.length);
+        long blockId = StackProvider.getBlockId(rawBlockId);
 
-            ByteBuffer buffer = ByteBuffer.allocate(24);
-            //Prepare Root Node
+        //Prepare Auth Page
+        ZedPage authPage = ZedPage.createNew(ZedPage.PAGE_TYPE_DETAIL);
 
-            //
-            buffer.clear();
-        }
-        catch (Exception e){e.printStackTrace();}
-        return null;
+        //Prepare Detail Page
+        ZedPage detailPage = ZedPage.createNew(ZedPage.PAGE_TYPE_DETAIL);
+
+        //Prepare Root Node
+        Node node = Node.createNew(blockId);
+
+        ByteBuffer buffer = ByteBuffer.allocate(24);
+        buffer.putLong(0, node.nodeId);
+        buffer.putLong(8, authPage.pageId);
+        buffer.putLong(16, detailPage.pageId);
+
+        byte[] header = buffer.array();
+
+        buffer.clear();
+        System.arraycopy(header, 0, rawData, 8, header.length);
+        StackProvider.getSession().updateExtended(
+                StackProvider.NAMESPACE_EDITOR, email, rawData);
+
+        return new Editor(blockId, rawData);
     }
 }

@@ -73,46 +73,44 @@ public class Node {
         return super.toString();
     }
 
+    // Add a new child node to this node object
     public Node createNewChild(){
         return null;
     }
 
-    public static Node createNew(long adminId){
-        try {
-            //Prepare Editor NidList
-            ZedPage editorListPage = ZedPage.createNew(ZedPage.PAGE_TYPE_NID_LIST);
+    // Create a new node without node dependencies
+    public static Node createNew(long adminId) throws Exception{
+        //Prepare Editor NidList
+        ZedPage editorListPage = ZedPage.createNew(ZedPage.PAGE_TYPE_NID_LIST);
 
-            //Prepare Child NidList
-            ZedPage childListPage = ZedPage.createNew(ZedPage.PAGE_TYPE_NID_LIST);
+        //Prepare Child NidList
+        ZedPage childListPage = ZedPage.createNew(ZedPage.PAGE_TYPE_NID_LIST);
 
-            //Prepare Synapse NidList
-            ZedPage synapseListPage = ZedPage.createNew(ZedPage.PAGE_TYPE_NID_LIST);
+        //Prepare Synapse NidList
+        ZedPage synapseListPage = ZedPage.createNew(ZedPage.PAGE_TYPE_NID_LIST);
 
-            //Create Header
-            ByteBuffer buffer = ByteBuffer.allocate(38);
+        //Create Header
+        ByteBuffer buffer = ByteBuffer.allocate(38);
 
-            //Put Nid(s)
-            buffer.putLong(2, editorListPage.pageId);
-            buffer.putLong(18, childListPage.pageId);
-            buffer.putLong(22, synapseListPage.pageId);
+        //Put Nid(s)
+        buffer.putLong(2, editorListPage.pageId);
+        buffer.putLong(18, childListPage.pageId);
+        buffer.putLong(22, synapseListPage.pageId);
 
-            //Put default hashes
-            buffer.putLong(0,0);
-            buffer.putLong(10,0);
-            buffer.putLong(20, 0);
+        //Put default hashes
+        buffer.putLong(0,0);
+        buffer.putLong(10,0);
+        buffer.putLong(20, 0);
 
-            //Put Authorization Vars
-            buffer.putLong(30, adminId);
+        //Put Authorization Vars
+        buffer.putLong(30, adminId);
 
-            //Contact Stack to create a new node
-            long blockId = StackProvider.getSession()
-                    .insertFixed(StackProvider.NAMESPACE_NODE, buffer.array());
-            buffer.clear();
-            byte[] rawDataBytes = StackProvider.getSession()
-                    .getFixed(StackProvider.NAMESPACE_NODE, blockId);
-            return new Node(blockId, rawDataBytes);
-        }
-        catch (Exception e){e.printStackTrace();}
-        return null;
+        //Contact Stack to create a new node
+        long blockId = StackProvider.getSession()
+                .insertFixed(StackProvider.NAMESPACE_NODE, buffer.array());
+        buffer.clear();
+        byte[] rawDataBytes = StackProvider.getSession()
+                .getFixed(StackProvider.NAMESPACE_NODE, blockId);
+        return new Node(blockId, rawDataBytes);
     }
 }
