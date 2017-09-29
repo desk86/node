@@ -98,9 +98,10 @@ public class Gate {
                     JSONObject content = ob.getJSONObject("content");
                     Node node = NodeTerminal.getSession().getFactory()
                             .insertNode(
-                                    Long.parseLong((String)postMap.get("parent")),
-                                    content.toString(),
-                                    getSessionAdmin(postMap));
+                                    getSessionAdmin(postMap),
+                                    Long.parseLong(
+                                            (String)postMap.get("parent")),
+                                    content.toString());
                     if (node != null)
                         sendResponse(t, 200, node.toString());
                     else sendResponse(t, 500, "");
@@ -121,9 +122,9 @@ public class Gate {
                     JSONObject ob = new JSONObject((String)postMap.get("synapse"));
                     Synapse synapse = NodeTerminal.getSession().getFactory()
                             .insertSynapse(
+                                    getSessionAdmin(postMap),
                                     Long.parseLong((String)postMap.get("node")),
-                                    ob.getJSONObject("content").toString(),
-                                    getSessionAdmin(postMap));
+                                    ob.getJSONObject("content").toString());
                     if (synapse != null)
                         sendResponse(t, 200, synapse.toString());
                     else sendResponse(t, 500, "");
