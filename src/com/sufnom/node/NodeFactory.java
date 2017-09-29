@@ -7,6 +7,7 @@ import com.sufnom.node.page.NidListHolderPage;
 import com.sufnom.node.page.ZedDetailPage;
 import com.sufnom.node.page.ZedPage;
 import com.sufnom.stack.StackProvider;
+import com.sun.istack.internal.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -26,6 +27,15 @@ public class NodeFactory {
         }
     }
 
+    public Node insertNode(long adminId, long parentId, String content) throws Exception{
+        Node node = getNode(parentId);
+        return node.createNewChild(adminId, content);
+    }
+
+    public Synapse insertSynapse(long adminId, long nodeId, String content) throws Exception{
+        return Synapse.createNew(adminId, nodeId, content);
+    }
+
     public Editor getEditor(String email, String password){
         try {
             Editor editor = Editor.findEditor(email);
@@ -36,42 +46,48 @@ public class NodeFactory {
         return null;
     }
 
-    public Editor getEditor(long editorId){
-        return null;
+    public Editor getEditor(long editorId) throws Exception{
+        return new Editor(editorId, StackProvider.getSession()
+        .getExtended(StackProvider.NAMESPACE_EDITOR,editorId ));
     }
 
-    public Synapse insertSynapse(long nodeId, String content, long adminId){
-        return null;
-    }
-
-    public Synapse getSynapse(long synapseId){
-        return null;
-    }
-
-    public Node insertNode(long parentId, String content, long adminId){
-        return null;
-    }
-
-    public Node getNode(long parentId){
-        try {
-
-        }
-        catch (Exception e){e.printStackTrace();}
-        return null;
-    }
-
-    public List<Long> getChildList(long parentId){
-        List<Long> childIdList = new ArrayList<>();
-        return childIdList;
+    public Node getNode(long parentId) throws Exception{
+        return new Node(parentId, StackProvider.getSession()
+                .getFixed(StackProvider.NAMESPACE_NODE, parentId));
     }
 
     public JSONArray getNodeList(long parentId){
         JSONArray array = new JSONArray();
+        try {
+            Node node = getNode(parentId);
+            Node childNode;
+            JSONArray nodeArray = node.getChildNodes();
+            for (int i = 0; i < nodeArray.length(); i++){
+                childNode = getNode(nodeArray.getLong(i));
+                array.put(childNode.getJSON());
+            }
+        }
+        catch (Exception e){e.printStackTrace();}
         return array;
+    }
+
+    public Synapse getSynapse(long synapseId) throws Exception{
+        return new Synapse(synapseId, StackProvider.getSession()
+                .getFixed(StackProvider.NAMESPACE_SYNAPSE, synapseId));
     }
 
     public JSONArray getSynapseList(long nodeId){
         JSONArray array = new JSONArray();
+        try {
+            Node node = getNode(nodeId);
+            Synapse synapse;
+            JSONArray synapseArray = node.getSynapseList();
+            for (int i =0 ; i< synapseArray.length(); i++){
+                synapse = getSynapse(synapseArray.getLong(i));
+                array.put(synapse.getJSON());
+            }
+        }
+        catch (Exception e){e.printStackTrace();}
         return array;
     }
 }

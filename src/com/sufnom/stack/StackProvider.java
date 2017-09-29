@@ -82,6 +82,10 @@ public class StackProvider {
         return forward(namespace, "get", key.getBytes());
     }
 
+    public byte[] getExtended(String namespace, long blockId) throws Exception{
+        return forward(namespace, "getX", getRawBlockId(blockId));
+    }
+
     public String updateFixed(String namespace, long blockId, byte[] rawData) throws Exception{
         byte[] blockIdRaw = getRawBlockId(blockId);
         byte[] dataToPass= new byte[rawData.length + blockIdRaw.length];

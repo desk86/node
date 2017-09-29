@@ -15,7 +15,6 @@ public class Editor {
     public final long editorId;
 
     private byte[] rawEditorData;
-    private String name;
 
     private long rootNodeId;
     private long authPageId;
@@ -53,23 +52,28 @@ public class Editor {
                 .getPage(authPageId);
     }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public Node getRootNode(){
-        return null;
+    public Node getRootNode() throws Exception{
+        return new Node(rootNodeId, StackProvider.getSession()
+            .getFixed(StackProvider.NAMESPACE_NODE, rootNodeId));
     }
 
-    public void saveSelfToStack(){
+    public String getName() throws Exception{
+        return getDetail().getString("name");
+    }
 
+    public JSONObject getDetail() throws Exception{
+        ZedDetailPage page = (ZedDetailPage)NodeTerminal.getSession()
+                .getPage(detailPageId);
+        return new JSONObject(page.getDetail());
     }
 
     public JSONObject getOb(){
         JSONObject object = new JSONObject();
         try {
             object.put("id", editorId);
-            object.put("name", name);
             object.put("node", rootNodeId);
+
+            object.put("name", getName());
         }
         catch (Exception e){e.printStackTrace();}
         return object;
@@ -78,7 +82,7 @@ public class Editor {
     @Override
     public String toString() { return getOb().toString(); }
 
-    public static JSONObject getEditorInfo(long editorId){
+    public static JSONObject getEditorInfo(long editorId) throws Exception{
         Editor editor = NodeTerminal.getSession().getFactory()
                 .getEditor(editorId);
         if (editor != null)
@@ -136,7 +140,10 @@ public class Editor {
         detailPage.setDetail(content);
 
         //Prepare Root Node
-        Node node = Node.createNew(blockId);
+        JSONObject obEditor = new JSONObject(content);
+        JSONObject ob = new JSONObject();
+        ob.put("title", obEditor.getString("name") + "'s Node");
+        Node node = Node.createNew(blockId, ob.toString());
 
         ByteBuffer buffer = ByteBuffer.allocate(24);
         buffer.putLong(0, node.nodeId);
