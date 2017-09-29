@@ -3,28 +3,13 @@ package com.sufnom.node;
 import com.sufnom.node.ob.Editor;
 import com.sufnom.node.ob.Node;
 import com.sufnom.node.ob.Synapse;
-import com.sufnom.node.page.NidListHolderPage;
-import com.sufnom.node.page.ZedDetailPage;
-import com.sufnom.node.page.ZedPage;
 import com.sufnom.stack.StackProvider;
-import com.sun.istack.internal.NotNull;
 import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
 
 public class NodeFactory {
 
-    public Editor registerNew(String email, String password, String content){
-        try {
-            return Editor.createNew(email, password, content);
-        }
-        catch (Exception e){
-            e.printStackTrace();
-            return null;
-        }
+    public Editor registerNew(String email, String password, String content) throws Exception{
+        return Editor.createNew(email, password, content);
     }
 
     public Node insertNode(long adminId, long parentId, String content) throws Exception{
