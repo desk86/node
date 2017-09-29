@@ -23,7 +23,7 @@ public class Synapse {
     }
 
     private void iterateRawData(){
-        
+
     }
 
     public long getAdminId() { return adminId; }

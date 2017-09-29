@@ -1,6 +1,7 @@
 package com.sufnom.node.ob;
 
 import com.sufnom.node.NodeTerminal;
+import com.sufnom.node.page.ZedDetailPage;
 import com.sufnom.node.page.ZedPage;
 import com.sufnom.stack.StackProvider;
 import org.json.JSONArray;
@@ -37,6 +38,21 @@ public class Editor {
         buffer.clear();
     }
 
+    public boolean isPasswordMatches(String pass){
+        try {
+            ZedDetailPage page = getAuthPage();
+            JSONObject ob = new JSONObject(page.getDetail());
+            return ob.getString("pass").equals(pass);
+        }
+        catch (Exception e){e.printStackTrace();}
+        return false;
+    }
+
+    public ZedDetailPage getAuthPage() throws Exception{
+        return (ZedDetailPage)NodeTerminal.getSession()
+                .getPage(authPageId);
+    }
+
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
@@ -53,6 +69,7 @@ public class Editor {
         try {
             object.put("id", editorId);
             object.put("name", name);
+            object.put("node", rootNodeId);
         }
         catch (Exception e){e.printStackTrace();}
         return object;
@@ -82,8 +99,19 @@ public class Editor {
         return array;
     }
 
+    public static Editor findEditor(String email) throws Exception{
+        byte[] rawData = StackProvider.getSession()
+                .getExtended(StackProvider.NAMESPACE_EDITOR, email);
+        if (rawData.length != StackProvider.MAX_FSI_SIZE)
+            throw new Exception("Invalid Response");
+        byte[] rawBlockId = new byte[8];
+        System.arraycopy(rawData, 0, rawBlockId, 0, rawBlockId.length);
+        long blockId = StackProvider.getBlockId(rawBlockId);
+        return new Editor(blockId, rawData);
+    }
+
     public static Editor createNew(String email, String pass,
-                   JSONObject content) throws Exception{
+                   String content) throws Exception{
         byte[] rawData = new byte[StackProvider.MAX_FSI_SIZE];
         //Insert Blank Page and get admin Id
         String msg = StackProvider.getSession()
@@ -98,10 +126,14 @@ public class Editor {
         long blockId = StackProvider.getBlockId(rawBlockId);
 
         //Prepare Auth Page
-        ZedPage authPage = ZedPage.createNew(ZedPage.PAGE_TYPE_DETAIL);
+        ZedDetailPage authPage = (ZedDetailPage)ZedPage
+                .createNew(ZedPage.PAGE_TYPE_DETAIL);
+        authPage.addDetail("pass", pass);
 
         //Prepare Detail Page
-        ZedPage detailPage = ZedPage.createNew(ZedPage.PAGE_TYPE_DETAIL);
+        ZedDetailPage detailPage = (ZedDetailPage) ZedPage
+                .createNew(ZedPage.PAGE_TYPE_DETAIL);
+        detailPage.setDetail(content);
 
         //Prepare Root Node
         Node node = Node.createNew(blockId);

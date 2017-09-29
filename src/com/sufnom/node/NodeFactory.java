@@ -3,15 +3,36 @@ package com.sufnom.node;
 import com.sufnom.node.ob.Editor;
 import com.sufnom.node.ob.Node;
 import com.sufnom.node.ob.Synapse;
+import com.sufnom.node.page.NidListHolderPage;
+import com.sufnom.node.page.ZedDetailPage;
+import com.sufnom.node.page.ZedPage;
+import com.sufnom.stack.StackProvider;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 public class NodeFactory {
 
+    public Editor registerNew(String email, String password, String content){
+        try {
+            return Editor.createNew(email, password, content);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public Editor getEditor(String email, String password){
+        try {
+            Editor editor = Editor.findEditor(email);
+            if (editor.isPasswordMatches(password))
+                return editor;
+        }
+        catch (Exception e){e.printStackTrace();}
         return null;
     }
 
@@ -33,7 +54,6 @@ public class NodeFactory {
 
     public Node getNode(long parentId){
         try {
-            Node node = new Node(parentId);
 
         }
         catch (Exception e){e.printStackTrace();}

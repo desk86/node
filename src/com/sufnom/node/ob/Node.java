@@ -7,7 +7,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.nio.ByteBuffer;
-import java.sql.ResultSet;
 
 public class Node {
     private static final String KEY_NODE_ID = "id";
@@ -18,8 +17,11 @@ public class Node {
     private JSONObject content;
     private JSONArray editors;
 
+    private int editorCount;
     private int nodeChildCount;
     private int synapseCount;
+
+    private long editorPageId;
     private long childPageId;
     private long synapsePageId;
 
@@ -28,11 +30,14 @@ public class Node {
     public Node(long nodeId, byte[] rawNodeData){
         this.nodeId = nodeId;
         this.rawNodeData = rawNodeData;
-        iterateRawData();
+        bindHeaders();
     }
 
-    private void iterateRawData(){
+    private void bindHeaders(){
+        try {
 
+        }
+        catch (Exception e){e.printStackTrace();}
     }
 
     private NidListHolderPage getChildListPage(){
@@ -76,6 +81,10 @@ public class Node {
     // Add a new child node to this node object
     public Node createNewChild(){
         return null;
+    }
+
+    public void addSynapse(long blockId){
+
     }
 
     // Create a new node without node dependencies
