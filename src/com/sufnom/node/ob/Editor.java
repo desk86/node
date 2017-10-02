@@ -1,6 +1,7 @@
 package com.sufnom.node.ob;
 
 import com.sufnom.node.NodeTerminal;
+import com.sufnom.node.page.ZedDetailPage;
 import com.sufnom.node.page.ZedPage;
 import com.sufnom.stack.StackProvider;
 import org.json.JSONArray;
@@ -14,7 +15,6 @@ public class Editor {
     public final long editorId;
 
     private byte[] rawEditorData;
-    private String name;
 
     private long rootNodeId;
     private long authPageId;
@@ -37,22 +37,43 @@ public class Editor {
         buffer.clear();
     }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public Node getRootNode(){
-        return null;
+    public boolean isPasswordMatches(String pass){
+        try {
+            ZedDetailPage page = getAuthPage();
+            JSONObject ob = new JSONObject(page.getDetail());
+            return ob.getString("pass").equals(pass);
+        }
+        catch (Exception e){e.printStackTrace();}
+        return false;
     }
 
-    public void saveSelfToStack(){
+    public ZedDetailPage getAuthPage() throws Exception{
+        return (ZedDetailPage)NodeTerminal.getSession()
+                .getPage(authPageId);
+    }
 
+    public Node getRootNode() throws Exception{
+        return new Node(rootNodeId, StackProvider.getSession()
+            .getFixed(StackProvider.NAMESPACE_NODE, rootNodeId));
+    }
+
+    public String getName() throws Exception{
+        return getDetail().getString("name");
+    }
+
+    public JSONObject getDetail() throws Exception{
+        ZedDetailPage page = (ZedDetailPage)NodeTerminal.getSession()
+                .getPage(detailPageId);
+        return new JSONObject(page.getDetail());
     }
 
     public JSONObject getOb(){
         JSONObject object = new JSONObject();
         try {
             object.put("id", editorId);
-            object.put("name", name);
+            object.put("node", rootNodeId);
+
+            object.put("name", getName());
         }
         catch (Exception e){e.printStackTrace();}
         return object;
@@ -61,7 +82,7 @@ public class Editor {
     @Override
     public String toString() { return getOb().toString(); }
 
-    public static JSONObject getEditorInfo(long editorId){
+    public static JSONObject getEditorInfo(long editorId) throws Exception{
         Editor editor = NodeTerminal.getSession().getFactory()
                 .getEditor(editorId);
         if (editor != null)
@@ -82,8 +103,19 @@ public class Editor {
         return array;
     }
 
+    public static Editor findEditor(String email) throws Exception{
+        byte[] rawData = StackProvider.getSession()
+                .getExtended(StackProvider.NAMESPACE_EDITOR, email);
+        if (rawData.length != StackProvider.MAX_FSI_SIZE)
+            throw new Exception("Invalid Response");
+        byte[] rawBlockId = new byte[8];
+        System.arraycopy(rawData, 0, rawBlockId, 0, rawBlockId.length);
+        long blockId = StackProvider.getBlockId(rawBlockId);
+        return new Editor(blockId, rawData);
+    }
+
     public static Editor createNew(String email, String pass,
-                   JSONObject content) throws Exception{
+                   String content) throws Exception{
         byte[] rawData = new byte[StackProvider.MAX_FSI_SIZE];
         //Insert Blank Page and get admin Id
         String msg = StackProvider.getSession()
@@ -98,13 +130,20 @@ public class Editor {
         long blockId = StackProvider.getBlockId(rawBlockId);
 
         //Prepare Auth Page
-        ZedPage authPage = ZedPage.createNew(ZedPage.PAGE_TYPE_DETAIL);
+        ZedDetailPage authPage = (ZedDetailPage)ZedPage
+                .createNew(ZedPage.PAGE_TYPE_DETAIL);
+        authPage.addDetail("pass", pass);
 
         //Prepare Detail Page
-        ZedPage detailPage = ZedPage.createNew(ZedPage.PAGE_TYPE_DETAIL);
+        ZedDetailPage detailPage = (ZedDetailPage) ZedPage
+                .createNew(ZedPage.PAGE_TYPE_DETAIL);
+        detailPage.setDetail(content);
 
         //Prepare Root Node
-        Node node = Node.createNew(blockId);
+        JSONObject obEditor = new JSONObject(content);
+        JSONObject ob = new JSONObject();
+        ob.put("title", obEditor.getString("name") + "'s Node");
+        Node node = Node.createNew(blockId, ob.toString());
 
         ByteBuffer buffer = ByteBuffer.allocate(24);
         buffer.putLong(0, node.nodeId);

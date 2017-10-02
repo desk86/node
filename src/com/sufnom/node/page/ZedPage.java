@@ -8,13 +8,13 @@ public abstract class ZedPage {
     public static final short PAGE_TYPE_NID_LIST = 0;
     public static final short PAGE_TYPE_DETAIL = 1;
     public static ZedPage createNew(short pageType) throws Exception{
-        //Insert A Blank data and get its id
-        //Always add this id immediately to related table
+        //Insert A Blank data and get its id.
+        //Always add this id immediately to related table.
         //for example when a page is created for listing
         //child table, then write this page id immediately
-        //to the header, and save the header to disk
-        //creating a page open a blank 4k block inside disk
-        //which block is permanent, and currently not
+        //to the header, and save the header to disk.
+        //Creating a page, opens a blank 4k block inside disk
+        //this created block is permanent, and currently not
         //deletable
 
         //Stack will return pageId if everything went well0

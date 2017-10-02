@@ -1,6 +1,7 @@
 package com.sufnom;
 
 import com.sufnom.node.NodeTerminal;
+import com.sufnom.node.ob.Editor;
 import com.sufnom.node.ob.Node;
 import com.sufnom.node.ob.Synapse;
 import com.sufnom.sys.Config;
@@ -21,6 +22,7 @@ public class Gate {
             Config.getSession().getValue(Config.KEY_DEBUG).toLowerCase()
             .equals(String.valueOf(true));
     private static final String CONTEXT_AUTH = "/auth";
+    private static final String CONTEXT_WELCOME = "/register";
     private static final String CONTEXT_NODE = "/node";
     private static final String CONTEXT_SYNAPSE = "/synapse";
 
@@ -58,6 +60,9 @@ public class Gate {
                     case CONTEXT_AUTH:
                         handleAuthResponse(t, postMap);
                         break;
+                    case CONTEXT_WELCOME:
+                        handleRegisterResponse(t, postMap);
+                        break;
                     default: sendResponse(t, 200, null);
                 }
             }
@@ -65,6 +70,23 @@ public class Gate {
                 e.printStackTrace();
                 sendResponse(t, 200, "error");
             }
+        }
+
+        private void handleRegisterResponse(HttpExchange t, Map postMap) throws Exception{
+            try {
+                String email = (String) postMap.get("email");
+                String password = (String)postMap.get("password");
+                String content = (String)postMap.get("content");
+                @SuppressWarnings("unused") //TODO Can Be Used For Later
+                Editor editor = NodeTerminal.getSession()
+                        .getFactory().registerNew(email, password, content);
+                sendResponse(t, 200, NodeTerminal.getSession().signIn(email, password));
+            }
+            catch (Exception e){
+                e.printStackTrace();
+                sendResponse(t,500, "error");
+            }
+
         }
 
         private void handleAuthResponse(HttpExchange t, Map postMap) throws Exception{
@@ -98,9 +120,10 @@ public class Gate {
                     JSONObject content = ob.getJSONObject("content");
                     Node node = NodeTerminal.getSession().getFactory()
                             .insertNode(
-                                    Long.parseLong((String)postMap.get("parent")),
-                                    content.toString(),
-                                    getSessionAdmin(postMap));
+                                    getSessionAdmin(postMap),
+                                    Long.parseLong(
+                                            (String)postMap.get("parent")),
+                                    content.toString());
                     if (node != null)
                         sendResponse(t, 200, node.toString());
                     else sendResponse(t, 500, "");
@@ -121,9 +144,9 @@ public class Gate {
                     JSONObject ob = new JSONObject((String)postMap.get("synapse"));
                     Synapse synapse = NodeTerminal.getSession().getFactory()
                             .insertSynapse(
+                                    getSessionAdmin(postMap),
                                     Long.parseLong((String)postMap.get("node")),
-                                    ob.getJSONObject("content").toString(),
-                                    getSessionAdmin(postMap));
+                                    ob.getJSONObject("content").toString());
                     if (synapse != null)
                         sendResponse(t, 200, synapse.toString());
                     else sendResponse(t, 500, "");
